@@ -1,0 +1,38 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-autoledger}
+      POSTGRES_USER: ${POSTGRES_USER:-autoledger}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-autoledger_dev}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-autoledger} -d ${POSTGRES_DB:-autoledger}"]
+      interval: 5s
+      retries: 12
+  web:
+    build: .
+    ports: ["8000:8000"]
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings
+      SECRET_KEY: ${SECRET_KEY:-development-only-change-me}
+      DJANGO_DEBUG: ${DJANGO_DEBUG:-${DEBUG:-true}}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1}
+      POSTGRES_DB: ${POSTGRES_DB:-autoledger}
+      POSTGRES_USER: ${POSTGRES_USER:-autoledger}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-autoledger_dev}
+      POSTGRES_HOST: db
+      USE_SQLITE: "false"
+      POSTGRES_PORT: 5432
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./media:/app/media
+      - ./static:/app/static
+      - ./staticfiles:/app/staticfiles
+    command: sh -c "python manage.py migrate && python manage.py collectstatic --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 2"
+volumes:
+  postgres_data:
