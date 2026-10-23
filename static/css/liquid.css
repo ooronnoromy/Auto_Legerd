@@ -94,3 +94,11 @@ textarea.form-control,.photo-upload,.field[data-field="vehicles"] .form-control{
  :root,html[data-theme]{--glass:#e9effae6;--glass-control:#e2eafaeb;--admin-glass:#e9effae6;--admin-control:#e2eafaeb}
  .glass-header,#header,.glass-search-panel{background:#e2eafaf2}
 }
+.install-app-row{display:flex;justify-content:flex-end;margin:16px 0 0;gap:10px}
+.install-app-row [hidden]{display:none}
+.install-app-row .btn{min-height:44px;gap:8px}
+.install-help{width:calc(100% - 32px);max-width:420px;border:1px solid #fff;border-radius:24px;padding:24px;background:#edf2fc;color:#304a75;box-shadow:0 20px 70px #304c8c40}
+.install-help::backdrop{background:#13213b70}
+.install-help h2{margin-top:0;font-size:22px}
+.install-help p{line-height:1.7;margin-bottom:24px}
+.login-box .install-app-row{justify-content:center;margin-block:20px}

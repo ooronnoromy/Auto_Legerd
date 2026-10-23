@@ -6,8 +6,16 @@ BASE_DIR=Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / '.env')
 SECRET_KEY=os.getenv('SECRET_KEY','DEV-ONLY-CHANGE-ME-BEFORE-DEPLOYMENT')
 DEBUG=os.getenv('DJANGO_DEBUG','true').lower()=='true'
-ALLOWED_HOSTS=os.getenv('ALLOWED_HOSTS','127.0.0.1,localhost').split(',')
-CSRF_TRUSTED_ORIGINS=[x for x in os.getenv('CSRF_TRUSTED_ORIGINS','').split(',') if x]
+ALLOWED_HOSTS=[x.strip() for x in os.getenv('ALLOWED_HOSTS','127.0.0.1,localhost').split(',') if x.strip()]
+CSRF_TRUSTED_ORIGINS=[x.strip().rstrip('/') for x in os.getenv('CSRF_TRUSTED_ORIGINS','').split(',') if x.strip()]
+# Railway terminates HTTPS before forwarding requests to Django.
+if os.getenv('RAILWAY_PUBLIC_DOMAIN'):
+ railway_domain=os.environ['RAILWAY_PUBLIC_DOMAIN'].strip()
+ ALLOWED_HOSTS.append(railway_domain)
+ CSRF_TRUSTED_ORIGINS.append(f'https://{railway_domain}')
+if os.getenv('RAILWAY_PUBLIC_DOMAIN') or os.getenv('TRUST_PROXY_HTTPS','false').lower()=='true':
+ SECURE_PROXY_SSL_HEADER=('HTTP_X_FORWARDED_PROTO','https')
+CSRF_FAILURE_VIEW='ledger.security.csrf_failure'
 INSTALLED_APPS=['django.contrib.admin','django.contrib.auth','django.contrib.contenttypes','django.contrib.sessions','django.contrib.messages','django.contrib.staticfiles','ledger']
 MIDDLEWARE=['django.middleware.security.SecurityMiddleware','whitenoise.middleware.WhiteNoiseMiddleware','django.contrib.sessions.middleware.SessionMiddleware','django.middleware.common.CommonMiddleware','django.middleware.csrf.CsrfViewMiddleware','django.contrib.auth.middleware.AuthenticationMiddleware','django.contrib.messages.middleware.MessageMiddleware','django.middleware.clickjacking.XFrameOptionsMiddleware']
 ROOT_URLCONF='config.urls'

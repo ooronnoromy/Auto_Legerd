@@ -1,0 +1,8 @@
+{% load static %}<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Refresh your session - AutoLedger</title><link rel="stylesheet" href="{% static 'css/style.css' %}"></head>
+<body class="login-body"><main class="login-box">
+<h1>Please refresh your session</h1>
+<p>This form expired or your browser could not verify it. Your request was not saved.</p>
+<p>Open the sign-in page again and allow cookies for this website. Use the same website address throughout.</p>
+<a class="btn primary" href="{% url 'login' %}">Return to sign in</a>
+</main></body></html>

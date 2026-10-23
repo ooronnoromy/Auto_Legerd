@@ -1,9 +1,10 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
-from . import views, mobile_views, push_views
+from . import views, mobile_views, push_views, security
 urlpatterns=[path('login/',auth_views.LoginView.as_view(template_name='registration/login.html'),name='login'),path('logout/',auth_views.LogoutView.as_view(),name='logout'),path('',views.dashboard,name='dashboard'),path('vehicles/',views.vehicles,name='vehicles'),path('vehicles/add/',views.vehicle_form,name='vehicle_add'),path('vehicles/<int:pk>/edit/',views.vehicle_form,name='vehicle_edit'),path('expenses/',views.expenses,name='expenses'),path('expenses/add/',views.expense_form,name='expense_add'),path('expenses/<int:pk>/edit/',views.expense_form,name='expense_edit'),path('expenses/<int:pk>/delete/',views.expense_delete,name='expense_delete'),path('reminders/',mobile_views.reminders,name='reminders'),path('reminders/add/',views.reminder_form,name='reminder_add'),path('reminders/<int:pk>/edit/',views.reminder_form,name='reminder_edit'),path('users/',views.users,name='users'),path('users/add/',views.user_add,name='user_add'),path('reports/',mobile_views.reports,name='reports'),path('reports/download/',views.export_csv,name='export_csv'),path('manifest.webmanifest',views.manifest,name='manifest'),path('sw.js',views.service_worker,name='service_worker')]
 
 urlpatterns += [
+ path('session/csrf/', security.csrf_token, name='csrf_token'),
  path('notifications/config/', push_views.push_config, name='push_config'),
  path('notifications/subscribe/', push_views.subscribe, name='push_subscribe'),
  path('notifications/unsubscribe/', push_views.unsubscribe, name='push_unsubscribe'),

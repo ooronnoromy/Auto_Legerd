@@ -1,7 +1,7 @@
-const CACHE = 'autoledger-push-v12';
+const CACHE = 'autoledger-phone-v13';
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll([
-    '/static/css/style.css', '/static/css/mobile.css', '/static/css/garage.css', '/static/css/glass.css', '/static/css/liquid.css', '/static/img/liquid-lens.svg', '/static/js/glass.js', '/static/js/push.js', '/static/img/garage-banner.webp', '/static/img/garage-road.svg', '/static/js/app.js',
+    '/static/css/style.css', '/static/css/mobile.css', '/static/css/garage.css', '/static/css/glass.css', '/static/css/liquid.css', '/static/img/liquid-lens.svg', '/static/js/glass.js', '/static/js/push.js', '/static/img/garage-banner.webp', '/static/img/garage-road.svg', '/static/js/app.js', '/static/js/install.js', '/static/js/login.js',
     '/static/icons/icon-glass-192.png?v=pearl-11', '/static/icons/icon-glass-512.png?v=pearl-11', '/static/icons/apple-touch-icon.png?v=pearl-11', '/static/icons/favicon-32.png?v=pearl-11', '/static/icons/favicon.ico?v=pearl-11', '/static/icons/icon-glass.svg?v=pearl-11',
   ])).then(() => self.skipWaiting()));
 });

@@ -1,15 +1,3 @@
-let installPrompt = null;
-window.addEventListener('beforeinstallprompt', event => {
-  event.preventDefault(); installPrompt = event;
-  const button = document.getElementById('install-btn');
-  if (button) button.hidden = false;
-});
-document.getElementById('install-btn')?.addEventListener('click', async () => {
-  if (!installPrompt) return;
-  await installPrompt.prompt(); await installPrompt.userChoice;
-  installPrompt = null; document.getElementById('install-btn').hidden = true;
-});
-if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
 document.querySelectorAll('form[data-confirm]').forEach(form => form.addEventListener('submit', event => {
   if (!window.confirm(form.dataset.confirm)) event.preventDefault();
 }));

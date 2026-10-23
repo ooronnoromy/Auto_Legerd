@@ -64,6 +64,19 @@ PostgreSQL locally. Docker explicitly selects PostgreSQL.
 
 ## Deploy to Railway
 
+### Install on a phone
+
+Open the HTTPS website in your phone browser and tap **Download app** on the
+sign-in page or above the dashboard. Android browsers can show an install
+prompt. On iPhone, the button explains how to use Safari's **Share -> Add to
+Home Screen**. The installed app still requires an internet connection.
+
+If sign-in reports an expired form, return to sign in to obtain a fresh token.
+Allow cookies and use the same website address throughout. Behind a non-Railway
+HTTPS proxy, set `TRUST_PROXY_HTTPS=true` only if that proxy controls the
+`X-Forwarded-Proto` header, and configure `ALLOWED_HOSTS` and
+`CSRF_TRUSTED_ORIGINS` with your actual domain (origins include `https://`).
+
 Follow [RAILWAY.md](RAILWAY.md) for the PostgreSQL service, persistent photo
 volume, production variables, domain setup, and administrator creation.
 The included Dockerfile and `railway.json` configure production startup,
