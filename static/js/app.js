@@ -98,7 +98,7 @@ window.addEventListener('load', () => {
     }); return;
   }
   document.querySelectorAll('[data-chart-fallback]').forEach(element => { element.hidden = true; });
-  Chart.defaults.color = '#9aa3af'; Chart.defaults.font.family = 'DM Sans, sans-serif';
+  Chart.defaults.color = '#6d7fa5'; Chart.defaults.font.family = 'DM Sans, sans-serif';
   charts.forEach(canvas => {
     let rows; try { rows = JSON.parse(canvas.dataset.values); } catch { return; }
     if (!rows.length || !rows.some(row => Number(row.value) > 0)) {
@@ -108,13 +108,13 @@ window.addEventListener('load', () => {
     }
     const trend = canvas.id === 'trendChart'; const context = canvas.getContext('2d');
     const gradient = context.createLinearGradient(0, 0, 0, 240);
-    gradient.addColorStop(0, 'rgba(255,52,62,.30)'); gradient.addColorStop(1, 'rgba(255,52,62,0)');
+    gradient.addColorStop(0, 'rgba(0,77,255,.30)'); gradient.addColorStop(1, 'rgba(0,77,255,0)');
     const reportLegend = Boolean(canvas.closest('.breakdown-layout'));
     new Chart(context, {
       type: trend ? 'line' : 'doughnut',
       data: {labels: rows.map(row => row.label), datasets: [{data: rows.map(row => row.value),
-        backgroundColor: trend ? gradient : ['#ff343e','#ffb07c','#219fd5','#6786ab','#9c83db','#6ac9a5','#ddb760'],
-        borderColor: trend ? '#ff343e' : '#080b0e', borderWidth: trend ? 2.5 : 2,
+        backgroundColor: trend ? gradient : ['#0754ef','#20b8d8','#8075ed','#6a9cdd','#b49be6','#55bda8','#e0b86b'],
+        borderColor: trend ? '#0754ef' : '#ffffff', borderWidth: trend ? 2.5 : 2,
         fill: trend, tension: .42, pointRadius: rows.length === 1 ? 4 : 0, hoverOffset: trend ? 0 : 5}]},
       options: {responsive: true, maintainAspectRatio: false, cutout: '69%',
         plugins: {legend: {display: !trend && !reportLegend, position: 'right', labels: {boxWidth: 8, padding: 12, font: {size: 10}}}},

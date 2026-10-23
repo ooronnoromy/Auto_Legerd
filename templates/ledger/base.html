@@ -1,10 +1,11 @@
 {% load static ui %}<!doctype html>
 <html lang="en"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#050607"><meta name="apple-mobile-web-app-capable" content="yes">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#f5f9ff"><meta name="apple-mobile-web-app-capable" content="yes">
 <title>{% block title %}AutoLedger{% endblock %}</title>
 <link rel="manifest" href="{% url 'manifest' %}"><link rel="icon" href="{% static 'icons/icon-192.png' %}"><link rel="apple-touch-icon" href="{% static 'icons/icon-192.png' %}">
-<link rel="stylesheet" href="{% static 'css/style.css' %}?v=mobile-4"><link rel="stylesheet" href="{% static 'css/mobile.css' %}?v=mobile-4">
-<script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script><script defer src="{% static 'js/app.js' %}?v=mobile-4"></script>
+<link rel="stylesheet" href="{% static 'css/style.css' %}?v=blue-5"><link rel="stylesheet" href="{% static 'css/mobile.css' %}?v=blue-5">
+<link rel="stylesheet" href="{% static 'css/garage.css' %}?v=blue-5">
+<script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script><script defer src="{% static 'js/app.js' %}?v=blue-5"></script>
 </head><body class="app-body">
 <div class="app-shell">
 <aside class="sidebar" id="sidebar" aria-label="Main navigation">
@@ -20,9 +21,9 @@
 </nav><div class="sidebar-bottom"><div class="upgrade"><b>Drive smarter.</b><span>Every kilometer. Every taka. In one place.</span></div><a class="user-chip" href="{% url 'profile' %}"><span class="avatar">{{ request.user.first_name|first|default:'U'|upper }}</span><span><b>{{ request.user.get_full_name|default:request.user.username }}</b><small>{{ request.user.username }}</small></span></a><form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="logout" type="submit">{% icon 'logout' %} Sign out</button></form></div></div>
 </aside>
 <main class="main" id="main-content" tabindex="0" aria-label="Main content">
-<header class="topbar"><button id="mobile-menu" class="hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="sidebar">{% icon 'menu' %}</button><div class="top-search">AUTOLEDGER <span>/ PERSONAL GARAGE</span></div><div class="top-actions"><button class="install-btn" id="install-btn" hidden>Install App</button><a class="icon-button" href="{% url 'reminders' %}" aria-label="Reminders">{% icon 'bell' %}</a><a href="{% url 'profile' %}" class="avatar mini">{{ request.user.first_name|first|default:'U'|upper }}</a></div></header>
+<header class="topbar"><div class="top-search">AUTOLEDGER <span>/ PERSONAL GARAGE</span></div><div class="top-actions"><form class="global-search" action="{% url 'expenses' %}" method="get" role="search">{% icon 'search' %}<input type="search" name="q" placeholder="Search anything..." aria-label="Search expenses" value="{{ search_query|default:'' }}"></form><button class="install-btn" id="install-btn" hidden>Install App</button><a class="icon-button" href="{% url 'reminders' %}" aria-label="Reminders">{% icon 'bell' %}</a><a href="{% url 'profile' %}" class="top-account"><span class="avatar mini">{{ request.user.first_name|first|default:'U'|upper }}</span><span>{{ request.user.first_name|default:'My account' }}</span>{% icon 'down' %}</a></div></header>
 <header class="mobile-header">
-{% if active_nav == 'home' %}<div class="greeting"><span>{{ greeting }},</span><b>{{ request.user.first_name|default:'Driver' }}</b></div><a class="icon-button notification" href="{% url 'reminders' %}" aria-label="View reminders">{% icon 'bell' %}{% if pending_reminder_count %}<span class="notification-dot"></span>{% endif %}</a>
+{% if active_nav == 'home' %}<button id="mobile-menu" class="mobile-menu-button" aria-label="Open menu" aria-expanded="false" aria-controls="sidebar">{% icon 'menu' %}</button><div class="greeting"><span>{{ greeting }},</span><b>{{ request.user.first_name|default:'Driver' }}</b></div><a class="icon-button notification" href="{% url 'reminders' %}" aria-label="View reminders">{% icon 'bell' %}{% if pending_reminder_count %}<span class="notification-dot"></span>{% endif %}</a>
 {% else %}<a class="mobile-back" href="{% url back|default:'dashboard' %}" aria-label="Go back">{% icon 'back' %}</a><h1>{{ heading|default:mobile_title }}</h1><a class="icon-button" href="{% url 'reminders' %}" aria-label="View reminders">{% icon 'bell' %}</a>{% endif %}
 </header>
 <div class="page">{% for message in messages %}<div class="alert {% if message.tags == 'error' %}alert-error{% endif %}" role="status">{{ message }}</div>{% endfor %}{% block content %}{% endblock %}<footer class="mobile-footnote">AUTO<span>LEDGER</span> <span class="footnote-dot">&middot;</span> EVERY MILE MATTERS</footer></div>

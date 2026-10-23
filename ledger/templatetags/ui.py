@@ -3,6 +3,10 @@ from django.utils.safestring import mark_safe
 
 register = template.Library()
 PATHS = {
+    'search': '<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/>',
+    'down': '<path d="m6 9 6 6 6-6"/>',
+    'wallet': '<rect x="3" y="5" width="18" height="15" rx="3"/><path d="M3 8V5l14-3v3m-1 7h5v5h-5z"/>',
+    'more': '<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',
     'home': '<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>',
     'car': '<path d="m5 7 2-4h10l2 4 2 3v8H3v-8zM3 10h18M7 14h1m8 0h1M5 18v3m14-3v3M5 7h14"/>',
     'plus': '<path d="M12 5v14M5 12h14"/>',

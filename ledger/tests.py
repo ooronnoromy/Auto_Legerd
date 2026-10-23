@@ -53,6 +53,27 @@ class ApplicationTests(TestCase):
         self.assertRedirects(response, '/')
         self.assertRedirects(self.client.post(reverse('logout')), '/login/')
 
+    def test_dashboard_vehicle_summary_uses_only_selected_vehicle(self):
+        response = self.client.get(reverse('dashboard'))
+        self.assertEqual(response.context['vehicle_total'], Decimal('500.00'))
+        self.assertEqual(response.context['last_fuel'], self.expense)
+        self.assertIsNone(response.context['last_service'])
+        self.assertNotContains(response, 'Private Car')
+
+    def test_expense_search_preserves_owner_scope(self):
+        response = self.client.get(reverse('expenses'), {'q': 'Fuel stop'})
+        self.assertEqual(list(response.context['items']), [self.expense])
+        response = self.client.get(reverse('expenses'), {'q': 'Private'})
+        self.assertEqual(list(response.context['items']), [])
+        response = self.client.get(reverse('expenses'), {'q': 'My Car'})
+        self.assertEqual(list(response.context['items']), [self.expense])
+
+    def test_other_cost_card_excludes_fuel_and_maintenance(self):
+        parking = Expense.objects.create(owner=self.user, vehicle=self.vehicle,
+            category='parking', title='Parking', amount=Decimal('50.00'), date=date.today())
+        response = self.client.get(reverse('expenses'), {'group': 'other'})
+        self.assertEqual(list(response.context['items']), [parking])
+
     def test_vehicle_creation(self):
         response = self.client.post(reverse('vehicle_add'), {'name': 'New Car', 'plate': 'NEW-1', 'fuel_type': 'Petrol', 'odometer': 25})
         self.assertRedirects(response, reverse('vehicles'))

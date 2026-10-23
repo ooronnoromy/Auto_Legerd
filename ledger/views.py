@@ -73,8 +73,9 @@ def dashboard(request):
  cats=[{'label':label,'value':float(totals[key])} for key,label in Expense.TYPES if totals[key]]
  vehicles=Vehicle.objects.filter(owner=request.user)
  vehicle=vehicles.first()
+ vehicle_expenses=ex.filter(vehicle=vehicle) if vehicle else ex.none()
  upcoming=Reminder.objects.filter(owner=request.user,completed=False).select_related('vehicle')[:5]
- return render(request,'ledger/dashboard.html',{**base_context(request),'vehicle':vehicle,'vehicles':vehicles,'recent':ex[:7],'reminders':upcoming,'total':total,'fuel':totals['fuel'],'maintenance':totals['maintenance'],'other':total-totals['fuel']-totals['maintenance'],'monthly_json':json.dumps(monthly),'cats_json':json.dumps(cats),'expense_count':current.count()})
+ return render(request,'ledger/dashboard.html',{**base_context(request),'vehicle':vehicle,'vehicles':vehicles,'vehicle_total':vehicle_expenses.aggregate(v=Sum('amount'))['v'] or 0,'last_fuel':vehicle_expenses.filter(category='fuel').first(),'last_service':vehicle_expenses.filter(category='maintenance').first(),'recent':ex[:7],'reminders':upcoming,'total':total,'fuel':totals['fuel'],'maintenance':totals['maintenance'],'other':total-totals['fuel']-totals['maintenance'],'monthly_json':json.dumps(monthly),'cats_json':json.dumps(cats),'expense_count':current.count()})
 
 @login_required
 def vehicles(request):return render(request,'ledger/vehicles.html',{**base_context(request),'items':Vehicle.objects.filter(owner=request.user)})
@@ -88,6 +89,9 @@ def vehicle_form(request,pk=None):
 @login_required
 def expenses(request):
  items=Expense.objects.filter(owner=request.user).select_related('vehicle')
+ search_query=request.GET.get('q','').strip()[:150]
+ if search_query:items=items.filter(Q(title__icontains=search_query)|Q(vehicle__name__icontains=search_query)|Q(station__icontains=search_query)|Q(notes__icontains=search_query))
+ if request.GET.get('group')=='other':items=items.exclude(category__in=['fuel','maintenance'])
  category=request.GET.get('category','')
  if category in dict(Expense.TYPES):items=items.filter(category=category)
  vehicle_id=request.GET.get('vehicle','')
@@ -96,7 +100,7 @@ def expenses(request):
  if fuel_type:items=items.filter(fuel_type=fuel_type)
  station=request.GET.get('station','')
  if station:items=items.filter(station=station)
- return render(request,'ledger/expenses.html',{**base_context(request),'items':items[:300],'selected':category,'categories':Expense.TYPES,'selected_vehicle':vehicle_id,'selected_fuel':fuel_type,'fuel_types':['Petrol','Octane','Diesel','LPG','CNG','Electric'],'selected_station':station,'mobile_title':'Fuel History' if category=='fuel' else 'Maintenance History' if category=='maintenance' else 'Expense History'})
+ return render(request,'ledger/expenses.html',{**base_context(request),'items':items[:300],'search_query':search_query,'selected':category,'categories':Expense.TYPES,'selected_vehicle':vehicle_id,'selected_fuel':fuel_type,'fuel_types':['Petrol','Octane','Diesel','LPG','CNG','Electric'],'selected_station':station,'mobile_title':'Fuel History' if category=='fuel' else 'Maintenance History' if category=='maintenance' else 'Expense History'})
 @login_required
 def expense_form(request,pk=None):
  obj=get_object_or_404(Expense,pk=pk,owner=request.user) if pk else None
@@ -150,7 +154,7 @@ def export_csv(request):
   w.writerow([e.date,e.vehicle.name,e.get_category_display(),e.title,e.amount,e.odometer or '',e.liters or '',e.fuel_type,e.station,e.notes])
  return response
 
-def manifest(request):return JsonResponse({'name':'AutoLedger – Car Cost Manager','short_name':'AutoLedger','start_url':'/','scope':'/','display':'standalone','background_color':'#090b0e','theme_color':'#0d0f12','icons':[{'src':'/static/icons/icon-192.png','sizes':'192x192','type':'image/png'},{'src':'/static/icons/icon-512.png','sizes':'512x512','type':'image/png'}]})
+def manifest(request):return JsonResponse({'name':'AutoLedger – Car Cost Manager','short_name':'AutoLedger','start_url':'/','scope':'/','display':'standalone','background_color':'#f5f9ff','theme_color':'#f5f9ff','icons':[{'src':'/static/icons/icon-192.png','sizes':'192x192','type':'image/png'},{'src':'/static/icons/icon-512.png','sizes':'512x512','type':'image/png'}]})
 def service_worker(request):
  from django.conf import settings
  script=(settings.BASE_DIR/'static'/'js'/'service-worker.js').read_text(encoding='utf-8')

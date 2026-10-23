@@ -155,7 +155,7 @@ def reports(request):
     totals = list(items.values('category').annotate(total=Sum('amount')).order_by('-total'))
     grand = items.aggregate(s=Sum('amount'))['s'] or Decimal('0')
     category_names = dict(Expense.TYPES)
-    colors = ['#ff343e', '#ffb07c', '#219fd5', '#6786ab', '#9c83db', '#6ac9a5', '#ddb760']
+    colors = ['#0754ef', '#20b8d8', '#8075ed', '#6a9cdd', '#b49be6', '#55bda8', '#e0b86b']
     for index, row in enumerate(totals):
         row.update(label=category_names.get(row['category'], row['category']),
                    percent=round(float(row['total'] / grand * 100)) if grand else 0,

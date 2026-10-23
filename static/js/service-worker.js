@@ -1,7 +1,7 @@
-const CACHE = 'autoledger-mobile-v4';
+const CACHE = 'autoledger-blue-v5';
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll([
-    '/static/css/style.css', '/static/css/mobile.css', '/static/js/app.js', '/static/icons/icon-192.png',
+    '/static/css/style.css', '/static/css/mobile.css', '/static/css/garage.css', '/static/img/garage-banner.webp', '/static/img/garage-road.svg', '/static/js/app.js', '/static/icons/icon-192.png',
   ])).then(() => self.skipWaiting()));
 });
 self.addEventListener('activate', event => {
