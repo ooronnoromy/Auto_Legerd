@@ -187,7 +187,7 @@ def export_csv(request):
   w.writerow([e.date,e.vehicle.name,e.get_category_display(),e.title,e.amount,e.odometer or '',e.liters or '',e.fuel_type,e.station,e.notes])
  return response
 
-def manifest(request):return JsonResponse({'name':'AutoLedger – Car Cost Manager','short_name':'AutoLedger','start_url':'/','scope':'/','display':'standalone','background_color':'#f5f9ff','theme_color':'#f5f9ff','icons':[{'src':'/static/icons/icon-192.png','sizes':'192x192','type':'image/png'},{'src':'/static/icons/icon-512.png','sizes':'512x512','type':'image/png'}]})
+def manifest(request):return JsonResponse({'name':'AutoLedger – Car Cost Manager','short_name':'AutoLedger','start_url':'/','scope':'/','display':'standalone','background_color':'#bccbe5','theme_color':'#bccbe5','icons':[{'src':'/static/icons/icon-glass-192.png?v=pearl-11','sizes':'192x192','type':'image/png','purpose':'any maskable'},{'src':'/static/icons/icon-glass-512.png?v=pearl-11','sizes':'512x512','type':'image/png','purpose':'any maskable'}]})
 def service_worker(request):
  from django.conf import settings
  script=(settings.BASE_DIR/'static'/'js'/'service-worker.js').read_text(encoding='utf-8')

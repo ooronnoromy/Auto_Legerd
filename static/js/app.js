@@ -10,20 +10,6 @@ document.getElementById('install-btn')?.addEventListener('click', async () => {
   installPrompt = null; document.getElementById('install-btn').hidden = true;
 });
 if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
-const menu = document.getElementById('mobile-menu');
-const sidebar = document.getElementById('sidebar');
-const overlay = document.getElementById('menu-overlay');
-function closeMenu() {
-  sidebar?.classList.remove('open'); overlay?.classList.remove('open');
-  menu?.setAttribute('aria-expanded', 'false');
-}
-menu?.addEventListener('click', () => {
-  const open = sidebar?.classList.toggle('open');
-  overlay?.classList.toggle('open', Boolean(open));
-  menu.setAttribute('aria-expanded', String(Boolean(open)));
-});
-overlay?.addEventListener('click', closeMenu);
-document.addEventListener('keydown', event => { if (event.key === 'Escape') closeMenu(); });
 document.querySelectorAll('form[data-confirm]').forEach(form => form.addEventListener('submit', event => {
   if (!window.confirm(form.dataset.confirm)) event.preventDefault();
 }));

@@ -1,38 +1,39 @@
 {% load static ui %}<!doctype html>
 <html lang="en"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#f5f9ff"><meta name="apple-mobile-web-app-capable" content="yes">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#bccbe5"><meta name="apple-mobile-web-app-capable" content="yes">
 <title>{% block title %}AutoLedger{% endblock %}</title>
-<link rel="manifest" href="{% url 'manifest' %}"><link rel="icon" href="{% static 'icons/icon-192.png' %}"><link rel="apple-touch-icon" href="{% static 'icons/icon-192.png' %}">
-<link rel="stylesheet" href="{% static 'css/style.css' %}?v=blue-5"><link rel="stylesheet" href="{% static 'css/mobile.css' %}?v=blue-5">
-<link rel="stylesheet" href="{% static 'css/garage.css' %}?v=blue-5">
-<script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script><script defer src="{% static 'js/app.js' %}?v=blue-5"></script>
-</head><body class="app-body">
-<div class="app-shell">
-<aside class="sidebar" id="sidebar" aria-label="Main navigation">
-<a class="brand" href="{% url 'dashboard' %}"><span class="brand-mark">A</span><span>Auto<span class="red">Ledger</span><small>DRIVE SMARTER &middot; SPEND WISER</small></span></a>
-<div class="sidebar-scroll" tabindex="0" role="region" aria-label="Sidebar navigation and account"><nav>
-<a class="nav-link {% if active_nav == 'home' %}active{% endif %}" href="{% url 'dashboard' %}">{% icon 'home' %}<span>Dashboard</span></a>
-<a class="nav-link {% if active_nav == 'cars' %}active{% endif %}" href="{% url 'vehicles' %}">{% icon 'car' %}<span>My Cars</span></a>
-<a class="nav-link {% if active_nav == 'history' or active_nav == 'add' %}active{% endif %}" href="{% url 'expenses' %}">{% icon 'fuel' %}<span>Expenses & Fuel</span></a>
-<a class="nav-link {% if request.resolver_match.url_name == 'reminders' %}active{% endif %}" href="{% url 'reminders' %}">{% icon 'calendar' %}<span>Reminders</span></a>
-<a class="nav-link {% if request.resolver_match.url_name == 'reports' %}active{% endif %}" href="{% url 'reports' %}">{% icon 'chart' %}<span>Analytics</span></a>
-<a class="nav-link {% if active_nav == 'profile' %}active{% endif %}" href="{% url 'profile' %}">{% icon 'profile' %}<span>Profile</span></a>
-{% if is_admin %}<div class="nav-sub">ADMINISTRATION</div><a class="nav-link" href="{% url 'users' %}">{% icon 'shield' %}<span>Manage Users</span></a><a class="nav-link" href="/admin/">{% icon 'settings' %}<span>Django Admin</span></a>{% endif %}
-</nav><div class="sidebar-bottom"><div class="upgrade"><b>Drive smarter.</b><span>Every kilometer. Every taka. In one place.</span></div><a class="user-chip" href="{% url 'profile' %}"><span class="avatar">{{ request.user.first_name|first|default:'U'|upper }}</span><span><b>{{ request.user.get_full_name|default:request.user.username }}</b><small>{{ request.user.username }}</small></span></a><form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="logout" type="submit">{% icon 'logout' %} Sign out</button></form></div></div>
-</aside>
-<main class="main" id="main-content" tabindex="0" aria-label="Main content">
-<header class="topbar"><div class="top-search">AUTOLEDGER <span>/ PERSONAL GARAGE</span></div><div class="top-actions"><form class="global-search" action="{% url 'expenses' %}" method="get" role="search">{% icon 'search' %}<input type="search" name="q" placeholder="Search anything..." aria-label="Search expenses" value="{{ search_query|default:'' }}"></form><button class="install-btn" id="install-btn" hidden>Install App</button><a class="icon-button" href="{% url 'reminders' %}" aria-label="Reminders">{% icon 'bell' %}</a><a href="{% url 'profile' %}" class="top-account"><span class="avatar mini">{{ request.user.first_name|first|default:'U'|upper }}</span><span>{{ request.user.first_name|default:'My account' }}</span>{% icon 'down' %}</a></div></header>
-<header class="mobile-header">
-{% if active_nav == 'home' %}<button id="mobile-menu" class="mobile-menu-button" aria-label="Open menu" aria-expanded="false" aria-controls="sidebar">{% icon 'menu' %}</button><div class="greeting"><span>{{ greeting }},</span><b>{{ request.user.first_name|default:'Driver' }}</b></div><a class="icon-button notification" href="{% url 'reminders' %}" aria-label="View reminders">{% icon 'bell' %}{% if pending_reminder_count %}<span class="notification-dot"></span>{% endif %}</a>
-{% else %}<a class="mobile-back" href="{% url back|default:'dashboard' %}" aria-label="Go back">{% icon 'back' %}</a><h1>{{ heading|default:mobile_title }}</h1><a class="icon-button" href="{% url 'reminders' %}" aria-label="View reminders">{% icon 'bell' %}</a>{% endif %}
-</header>
-<div class="page">{% for message in messages %}<div class="alert {% if message.tags == 'error' %}alert-error{% endif %}" role="status">{{ message }}</div>{% endfor %}{% block content %}{% endblock %}<footer class="mobile-footnote">AUTO<span>LEDGER</span> <span class="footnote-dot">&middot;</span> EVERY MILE MATTERS</footer></div>
-</main></div><div id="menu-overlay"></div>
-<nav class="bottom-nav" aria-label="Mobile navigation">
-<a href="{% url 'dashboard' %}" class="bottom-link {% if active_nav == 'home' %}selected{% endif %}" {% if active_nav == 'home' %}aria-current="page"{% endif %}>{% icon 'home' %}<span>Home</span></a>
-<a href="{% url 'vehicles' %}" class="bottom-link {% if active_nav == 'cars' %}selected{% endif %}" {% if active_nav == 'cars' %}aria-current="page"{% endif %}>{% icon 'car' %}<span>Cars</span></a>
-<a href="{% url 'expense_add' %}" class="bottom-add {% if active_nav == 'add' %}selected{% endif %}" aria-label="Add expense" {% if active_nav == 'add' %}aria-current="page"{% endif %}>{% icon 'plus' %}</a>
-<a href="{% url 'expenses' %}" class="bottom-link {% if active_nav == 'history' %}selected{% endif %}" {% if active_nav == 'history' %}aria-current="page"{% endif %}>{% icon 'history' %}<span>History</span></a>
-<a href="{% url 'profile' %}" class="bottom-link {% if active_nav == 'profile' %}selected{% endif %}" {% if active_nav == 'profile' %}aria-current="page"{% endif %}>{% icon 'profile' %}<span>Profile</span></a>
+<link rel="manifest" href="{% url 'manifest' %}"><link rel="icon" type="image/svg+xml" href="{% static 'icons/icon-glass.svg' %}?v=pearl-11"><link rel="icon" type="image/png" sizes="32x32" href="{% static 'icons/favicon-32.png' %}?v=pearl-11"><link rel="shortcut icon" href="{% static 'icons/favicon.ico' %}?v=pearl-11"><link rel="apple-touch-icon" sizes="180x180" href="{% static 'icons/apple-touch-icon.png' %}?v=pearl-11">
+<link rel="stylesheet" href="{% static 'css/style.css' %}?v=push-12"><link rel="stylesheet" href="{% static 'css/mobile.css' %}?v=push-12"><link rel="stylesheet" href="{% static 'css/garage.css' %}?v=push-12"><link rel="stylesheet" href="{% static 'css/glass.css' %}?v=push-12">
+<script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script><script defer src="{% static 'js/app.js' %}?v=push-12"></script><script defer src="{% static 'js/glass.js' %}?v=push-12"></script>
+<link rel="stylesheet" href="{% static 'css/liquid.css' %}?v=push-12"><script defer src="{% static 'js/push.js' %}?v=push-12"></script></head><body class="app-body glass-app" data-push-config="{% url 'push_config' %}" data-push-subscribe="{% url 'push_subscribe' %}" data-push-unsubscribe="{% url 'push_unsubscribe' %}">
+<a class="skip-link" href="#main-content">Skip to content</a>
+<div class="app-shell"><main class="main" aria-label="Main content">
+<header class="glass-header">
+<a class="brand glass-brand" href="{% url 'dashboard' %}" aria-label="AutoLedger home"><span class="brand-mark">A</span><span>Auto<span class="red">Ledger</span><small>YOUR GARAGE, REIMAGINED</small></span></a>
+<nav class="glass-nav" aria-label="Main navigation">
+<a class="glass-nav-link {% if active_nav == 'home' %}active{% endif %}" href="{% url 'dashboard' %}" aria-label="Dashboard" title="Dashboard" {% if active_nav == 'home' %}aria-current="page"{% endif %}>{% icon 'home' %}<span>Dashboard</span></a>
+<a class="glass-nav-link {% if active_nav == 'cars' %}active{% endif %}" href="{% url 'vehicles' %}" aria-label="My Cars" title="My Cars" {% if active_nav == 'cars' %}aria-current="page"{% endif %}>{% icon 'car' %}<span>My Cars</span></a>
+<a class="glass-nav-link {% if active_nav == 'history' %}active{% endif %}" href="{% url 'expenses' %}" aria-label="Expenses & Fuel" title="Expenses & Fuel" {% if active_nav == 'history' %}aria-current="page"{% endif %}>{% icon 'fuel' %}<span>Expenses &amp; Fuel</span></a>
+<a class="glass-nav-link {% if active_nav == 'add' %}active{% endif %}" href="{% url 'expense_add' %}" aria-label="Add Expense" title="Add Expense" {% if active_nav == 'add' %}aria-current="page"{% endif %}>{% icon 'plus' %}<span>Add Expense</span></a>
+<a class="glass-nav-link {% if request.resolver_match.url_name == 'reminders' or request.resolver_match.url_name == 'reminder_add' or request.resolver_match.url_name == 'reminder_edit' %}active{% endif %}" href="{% url 'reminders' %}" aria-label="Reminders" title="Reminders" {% if request.resolver_match.url_name == 'reminders' or request.resolver_match.url_name == 'reminder_add' or request.resolver_match.url_name == 'reminder_edit' %}aria-current="page"{% endif %}>{% icon 'calendar' %}<span>Reminders</span></a>
+<a class="glass-nav-link {% if request.resolver_match.url_name == 'reports' %}active{% endif %}" href="{% url 'reports' %}" aria-label="Analytics" title="Analytics" {% if request.resolver_match.url_name == 'reports' %}aria-current="page"{% endif %}>{% icon 'chart' %}<span>Analytics</span></a>
+<a class="glass-nav-link {% if active_nav == 'profile' %}active{% endif %}" href="{% url 'profile' %}" aria-label="Profile" title="Profile" {% if active_nav == 'profile' %}aria-current="page"{% endif %}>{% icon 'profile' %}<span>Profile</span></a>
+{% if is_admin %}<span class="glass-nav-divider" aria-hidden="true"></span><a class="glass-nav-link {% if request.resolver_match.url_name == 'users' or request.resolver_match.url_name == 'user_add' or request.resolver_match.url_name == 'user_assign' %}active{% endif %}" href="{% url 'users' %}" aria-label="Manage Users" title="Manage Users" {% if request.resolver_match.url_name == 'users' or request.resolver_match.url_name == 'user_add' or request.resolver_match.url_name == 'user_assign' %}aria-current="page"{% endif %}>{% icon 'shield' %}<span>Manage Users</span></a><a class="glass-nav-link" href="{% url 'admin:index' %}" aria-label="Django Admin" title="Django Admin">{% icon 'settings' %}<span>Django Admin</span></a>{% endif %}
 </nav>
+<div class="glass-tools">
+<details class="glass-search" id="glass-search">
+<summary class="glass-tool search-trigger" aria-label="Search expenses" title="Search expenses ( / )" aria-controls="search-panel">{% icon 'search' %}<span class="sr-only">Search expenses</span></summary>
+<div class="glass-search-panel" id="search-panel">
+<div class="search-panel-heading"><div><span class="eyebrow">FIND IT IN YOUR GARAGE</span><h2>What are you looking for?</h2></div><button class="glass-tool" type="button" data-close-search aria-label="Close search">{% icon 'close' %}</button></div>
+<form class="glass-search-form" action="{% url 'expenses' %}" method="get" role="search"><label class="sr-only" for="garage-search">Search expenses, cars, stations or notes</label>{% icon 'search' %}<input id="garage-search" type="search" name="q" value="{{ search_query|default:'' }}" placeholder="Search expenses, cars, stations..." maxlength="150" autocomplete="off"><button class="btn primary" type="submit">Search <span aria-hidden="true">&#8594;</span></button></form>
+<p class="search-hint">Search by expense title, car name, station or notes.</p>
+</div></details>
+<a class="glass-tool notification" href="{% url 'reminders' %}" aria-label="Reminders{% if pending_reminder_count %}, {{ pending_reminder_count }} pending{% endif %}" title="Reminders">{% icon 'bell' %}{% if pending_reminder_count %}<span class="notification-dot"></span>{% endif %}</a>
+<button class="glass-tool" id="install-btn" hidden aria-label="Install AutoLedger" title="Install AutoLedger">{% icon 'download' %}</button>
+<form method="post" action="{% url 'logout' %}" class="glass-logout">{% csrf_token %}<button class="glass-tool" type="submit" aria-label="Sign out" title="Sign out">{% icon 'logout' %}</button></form>
+</div></header>
+<div class="glass-content" id="main-content" tabindex="-1">
+<header class="mobile-header">{% if active_nav == 'home' %}<div class="greeting"><span>{{ greeting }},</span><b>{{ request.user.first_name|default:'Driver' }}</b></div><a class="glass-tool" href="{% url 'expense_add' %}" aria-label="Add expense">{% icon 'plus' %}</a>{% else %}<a class="mobile-back" href="{% url back|default:'dashboard' %}" aria-label="Go back">{% icon 'back' %}</a><h1>{{ heading|default:mobile_title }}</h1>{% endif %}</header>
+<div class="page">{% for message in messages %}<div class="alert {% if message.tags == 'error' %}alert-error{% endif %}" role="status">{{ message }}</div>{% endfor %}{% block content %}{% endblock %}<footer class="glass-footer"><span>AUTO<b>LEDGER</b></span><span>Every mile. A clearer picture.</span></footer></div>
+</div></main></div>
 </body></html>

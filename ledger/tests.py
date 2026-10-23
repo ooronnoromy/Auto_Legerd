@@ -170,7 +170,7 @@ class ApplicationTests(TestCase):
             with self.subTest(page=page):
                 response = self.client.get(reverse(page))
                 self.assertEqual(response.status_code, 200)
-                self.assertContains(response, 'aria-label="Mobile navigation"')
+                self.assertContains(response, 'aria-label="Main navigation"')
                 for destination in ['dashboard', 'vehicles', 'expense_add', 'expenses', 'profile']:
                     self.assertContains(response, f'href="{reverse(destination)}"')
 

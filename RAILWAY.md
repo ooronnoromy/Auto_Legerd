@@ -40,6 +40,11 @@ Set these in **autoledger -> Variables**, not in your local `.env`:
 | `MEDIA_ROOT` | `/data/media` |
 | `WEB_CONCURRENCY` | `2` |
 
+For mobile car/expense notifications, also set `PUSH_VAPID_PUBLIC_KEY`,
+`PUSH_VAPID_PRIVATE_KEY`, and `PUSH_VAPID_SUBJECT` using the stable values in
+your ignored `.run/push-keys.env` file. See [mobile notification setup](PUSH_NOTIFICATIONS.md).
+The default Docker start command runs the push worker alongside the web app.
+
 Use Railway's reference-variable picker for `DATABASE_URL` if your database
 service has another name. Use its internal URL from this same environment;
 PostgreSQL does not need public networking. `DATABASE_URL` overrides local

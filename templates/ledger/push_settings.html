@@ -1,0 +1,7 @@
+{% load ui %}
+<section class="panel push-settings" data-push-controls aria-labelledby="push-heading">
+<div class="push-settings-heading"><span class="record-icon">{% icon 'bell' %}</span><div><h2 id="push-heading">Mobile notifications</h2><p>Stay up to date with your garage.</p></div></div>
+<p class="push-status" data-push-status role="status" aria-live="polite">Checking notifications on this device…</p>
+<div class="push-settings-actions"><button type="button" class="btn primary" data-enable-push disabled>{% icon 'bell' %} Enable notifications</button><button type="button" class="btn secondary" data-disable-push hidden>Disable on this device</button></div>
+<noscript><p>Enable JavaScript to turn on mobile notifications.</p></noscript>
+</section>

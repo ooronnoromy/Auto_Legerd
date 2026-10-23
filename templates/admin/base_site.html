@@ -1,0 +1,17 @@
+{% extends "admin/base.html" %}{% load static ui %}
+{% block title %}{{ title }} | AutoLedger Admin{% endblock %}
+{% block dark-mode-vars %}{% endblock %}
+{% block responsive %}{{ block.super }}<link rel="stylesheet" href="{% static 'css/admin-glass.css' %}?v=push-12"><link rel="stylesheet" href="{% static 'css/liquid.css' %}?v=push-12">{% endblock %}
+{% block branding %}<div class="admin-glass-brand"><a href="{% url 'admin:index' %}">Auto<span>Ledger</span></a><small>GARAGE ADMINISTRATION</small></div>{% endblock %}
+{% block userlinks %}<a href="{% url 'dashboard' %}">View garage</a> / {% if user.has_usable_password %}<a href="{% url 'admin:password_change' %}">Change password</a> / {% endif %}<form id="logout-form" method="post" action="{% url 'admin:logout' %}">{% csrf_token %}<button type="submit">Log out</button></form>{% endblock %}
+{% block nav-sidebar %}{% endblock %}
+{% block nav-global %}{% if has_permission %}<nav class="admin-glass-nav" aria-label="Administration navigation">
+<a href="{% url 'dashboard' %}" title="Back to garage" aria-label="Back to garage">{% icon 'back' %}<span>Garage</span></a>
+<a href="{% url 'admin:index' %}" class="{% if request.resolver_match.url_name == 'index' %}active{% endif %}" title="Administration" aria-label="Administration">{% icon 'home' %}<span>Administration</span></a>
+{% if perms.ledger.view_vehicle %}<a href="{% url 'admin:ledger_vehicle_changelist' %}" class="{% if opts.model_name == 'vehicle' %}active{% endif %}" title="Cars & Drivers" aria-label="Cars & Drivers">{% icon 'car' %}<span>Cars &amp; Drivers</span></a>{% endif %}
+{% if perms.ledger.view_user %}<a href="{% url 'admin:ledger_user_changelist' %}" class="{% if opts.model_name == 'user' %}active{% endif %}" title="Users" aria-label="Users">{% icon 'profile' %}<span>Users</span></a>{% endif %}
+{% if perms.ledger.view_expense %}<a href="{% url 'admin:ledger_expense_changelist' %}" class="{% if opts.model_name == 'expense' %}active{% endif %}" title="Expenses" aria-label="Expenses">{% icon 'fuel' %}<span>Expenses</span></a>{% endif %}
+{% if perms.ledger.view_reminder %}<a href="{% url 'admin:ledger_reminder_changelist' %}" class="{% if opts.model_name == 'reminder' %}active{% endif %}" title="Reminders" aria-label="Reminders">{% icon 'calendar' %}<span>Reminders</span></a>{% endif %}
+</nav>{% endif %}{% endblock %}
+
+{% block extrahead %}{{ block.super }}<link rel="icon" type="image/svg+xml" href="{% static 'icons/icon-glass.svg' %}?v=pearl-11"><link rel="icon" type="image/png" sizes="32x32" href="{% static 'icons/favicon-32.png' %}?v=pearl-11"><link rel="shortcut icon" href="{% static 'icons/favicon.ico' %}?v=pearl-11"><link rel="apple-touch-icon" sizes="180x180" href="{% static 'icons/apple-touch-icon.png' %}?v=pearl-11">{% endblock %}

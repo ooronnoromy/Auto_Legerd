@@ -2,17 +2,29 @@
 
 An original Django + PostgreSQL car expense management application inspired by the supplied black-and-red mobile mockup. Runs in browsers on Windows, macOS, Linux, Android, and iPhone/iPad.
 
-## Mobile app interface
+## Interface and navigation
 
-The responsive phone layout follows the supplied black-and-red reference with
-five working bottom tabs: Home, Cars, Add Expense, History, and Profile. It
-includes private car details, fuel and maintenance shortcuts, camera/library
-photo selection and previews, a fuel total calculator, filtered histories,
-monthly/yearly/custom analytics, a reminder calendar with completion actions,
-profile editing, password changes, CSV export, and help. Currency is BDT.
-Receipt details are entered manually; photo uploads do not perform OCR.
+The app uses a liquid glass theme on desktop and phones, with translucent
+surfaces and a sticky top navigation dock. Inactive destinations show icons;
+the current destination expands to show its label. On phones, swipe the top
+dock to reach additional destinations. Manage Users and Django Admin appear
+for staff accounts.
+
+Click the search icon to open the search panel below the navigation bar.
+Search expense titles, car names, stations, and notes. Press `/` outside a
+form field to open search, and Escape to close it. Search also works without
+JavaScript using the native disclosure control. The glass theme supports
+reduced motion and includes a fallback for browsers without backdrop blur.
+
+The app includes car assignments, fuel and maintenance entries, photo uploads,
+filtered histories, analytics, reminders, account settings, and CSV exports.
+Currency is BDT. Receipt details are entered manually; uploads do not perform OCR.
 
 ## Implemented
+
+Mobile push notifications for new cars and expenses are available from
+**Profile → Mobile notifications**. Notifications go to admins, the car owner,
+and the assigned driver. See [setup and phone requirements](PUSH_NOTIFICATIONS.md).
 - Login using **phone number as username**, Django hashed passwords, and terminal-created superadmin.
 - Superadmin dashboard and app user creation; standard users cannot see each other's cars, expenses, photos or reminders.
 - Multiple vehicles, photo uploads, fuel type and odometer.

@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
+from django.utils import timezone
 from django.core.validators import MinValueValidator,RegexValidator
 
 class User(AbstractUser):
@@ -54,3 +55,25 @@ class Reminder(models.Model):
  created_at=models.DateTimeField(auto_now_add=True)
  class Meta: ordering=['completed','due_date']
  def __str__(self): return self.title
+
+
+class PushSubscription(models.Model):
+ user=models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='push_subscriptions')
+ endpoint=models.URLField(max_length=2048,unique=True)
+ p256dh=models.CharField(max_length=120)
+ auth=models.CharField(max_length=40)
+ created_at=models.DateTimeField(auto_now_add=True)
+ updated_at=models.DateTimeField(auto_now=True)
+
+class PushDelivery(models.Model):
+ subscription=models.ForeignKey(PushSubscription,on_delete=models.CASCADE,related_name='deliveries')
+ vehicle=models.ForeignKey(Vehicle,on_delete=models.CASCADE)
+ event=models.CharField(max_length=20,choices=[('vehicle','New car'),('expense','New expense')])
+ object_id=models.PositiveBigIntegerField()
+ status=models.CharField(max_length=12,default='pending',choices=[(s,s) for s in ['pending','processing','sent','failed','skipped']])
+ attempts=models.PositiveSmallIntegerField(default=0)
+ available_at=models.DateTimeField(default=timezone.now)
+ created_at=models.DateTimeField(auto_now_add=True)
+ class Meta:
+  constraints=[models.UniqueConstraint(fields=['subscription','event','object_id'],name='unique_push_delivery')]
+  indexes=[models.Index(fields=['status','available_at'],name='push_pending_idx')]
