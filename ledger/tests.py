@@ -151,9 +151,12 @@ class ApplicationTests(TestCase):
         for name in ['users', 'user_add', 'admin:index']:
             self.assertEqual(self.client.get(reverse(name)).status_code, 200)
         response = self.client.post(reverse('user_add'), {'username': '01612345678',
-            'password1': 'Created-driver-85!', 'password2': 'Created-driver-85!'})
+            'password1': 'Created-driver-85!', 'password2': 'Created-driver-85!', 'vehicle': self.vehicle.pk})
         self.assertRedirects(response, reverse('users'))
         self.assertTrue(User.objects.get(username='01612345678').check_password('Created-driver-85!'))
+        self.vehicle.refresh_from_db()
+        self.assertEqual(self.vehicle.driver.username, '01612345678')
+        self.assertEqual(self.vehicle.owner, self.user)
 
     def test_pwa_endpoints_are_public(self):
         self.client.logout()

@@ -16,15 +16,16 @@ from django.views.decorators.http import require_POST
 from .forms import ProfileForm
 from .models import Expense, Reminder, Vehicle
 from .views import base_context
+from .access import vehicles_for,expenses_for,reminders_for
 
 
 @login_required
 def vehicle_detail(request, pk):
-    vehicle = get_object_or_404(Vehicle, pk=pk, owner=request.user)
-    expenses = Expense.objects.filter(owner=request.user, vehicle=vehicle)
+    vehicle = get_object_or_404(vehicles_for(request.user).select_related('driver'), pk=pk)
+    expenses = expenses_for(request.user).filter(vehicle=vehicle)
     return render(request, 'ledger/vehicle_detail.html', {
         **base_context(request), 'vehicle': vehicle, 'mobile_title': vehicle.name,
-        'back': 'vehicles', 'total': expenses.aggregate(v=Sum('amount'))['v'] or 0,
+        'back': 'vehicles', 'can_edit_vehicle': request.user.is_staff or vehicle.owner_id == request.user.pk, 'total': expenses.aggregate(v=Sum('amount'))['v'] or 0,
         'fuel': expenses.filter(category='fuel').aggregate(v=Sum('amount'))['v'] or 0,
         'liters': expenses.filter(category='fuel').aggregate(v=Sum('liters'))['v'] or 0,
         'recent': expenses[:5],
@@ -34,8 +35,8 @@ def vehicle_detail(request, pk):
 @login_required
 def profile(request):
     return render(request, 'ledger/profile.html', {
-        **base_context(request), 'car_count': Vehicle.objects.filter(owner=request.user).count(),
-        'expense_count': Expense.objects.filter(owner=request.user).count(),
+        **base_context(request), 'car_count': vehicles_for(request.user).count(),
+        'expense_count': expenses_for(request.user).count(),
     })
 
 
@@ -75,7 +76,7 @@ def help_page(request):
 
 @login_required
 def service_centers(request):
-    centers = Expense.objects.filter(owner=request.user).exclude(station='').values('station').annotate(
+    centers = expenses_for(request.user).exclude(station='').values('station').annotate(
         visits=Count('id'), total=Sum('amount')).order_by('station')
     return render(request, 'ledger/service_centers.html', {**base_context(request), 'centers': centers, 'back': 'profile'})
 
@@ -83,7 +84,7 @@ def service_centers(request):
 @login_required
 def reminders(request):
     today = timezone.localdate()
-    items = Reminder.objects.filter(owner=request.user).select_related('vehicle')
+    items = reminders_for(request.user).select_related('vehicle')
     vehicle_id = request.GET.get('vehicle', '')
     if vehicle_id.isdecimal() and len(vehicle_id) <= 18:
         items = items.filter(vehicle_id=vehicle_id)
@@ -122,7 +123,7 @@ def reminders(request):
 @login_required
 @require_POST
 def reminder_toggle(request, pk):
-    item = get_object_or_404(Reminder, pk=pk, owner=request.user)
+    item = get_object_or_404(reminders_for(request.user), pk=pk)
     item.completed = not item.completed
     item.save(update_fields=['completed'])
     messages.success(request, 'Reminder completed.' if item.completed else 'Reminder reopened.')
@@ -149,7 +150,7 @@ def reports(request):
             messages.error(request, 'Choose a valid start and end date for your report.')
     elif period != 'month':
         period = 'month'
-    items = Expense.objects.filter(owner=request.user, date__lte=end)
+    items = expenses_for(request.user).filter(date__lte=end)
     if start:
         items = items.filter(date__gte=start)
     totals = list(items.values('category').annotate(total=Sum('amount')).order_by('-total'))

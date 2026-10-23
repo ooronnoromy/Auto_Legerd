@@ -10,6 +10,7 @@ class User(AbstractUser):
 
 class Vehicle(models.Model):
  owner=models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='vehicles')
+ driver=models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.SET_NULL,related_name='assigned_vehicles',null=True,blank=True,limit_choices_to={'is_staff':False,'is_active':True})
  name=models.CharField(max_length=100)
  make=models.CharField(max_length=60,blank=True)
  model=models.CharField(max_length=60,blank=True)
