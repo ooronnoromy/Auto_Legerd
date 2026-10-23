@@ -7,6 +7,7 @@ import tempfile
 from datetime import date
 from decimal import Decimal
 from unittest.mock import patch
+from contextlib import redirect_stderr
 
 from django.conf import settings
 from django.db import DatabaseError
@@ -178,6 +179,26 @@ class ApplicationTests(TestCase):
 
 
 class ProductionConfigurationTests(SimpleTestCase):
+    def test_railway_starts_without_optional_media_volume(self):
+        from deploy.start import prepare_media
+        with tempfile.TemporaryDirectory() as directory:
+            output = io.StringIO()
+            with redirect_stderr(output):
+                prepare_media(os.path.join(directory, 'media'), {'RAILWAY_ENVIRONMENT_ID': 'test'})
+            self.assertTrue(os.path.isdir(os.path.join(directory, 'media')))
+            self.assertIn('temporary storage', output.getvalue())
+
+    def test_railway_uses_persistent_media_without_warning(self):
+        from deploy.start import prepare_media
+        with tempfile.TemporaryDirectory() as directory:
+            output = io.StringIO()
+            with redirect_stderr(output):
+                prepare_media(os.path.join(directory, 'media'), {
+                    'RAILWAY_ENVIRONMENT_ID': 'test', 'RAILWAY_VOLUME_MOUNT_PATH': directory,
+                })
+            self.assertTrue(os.path.isdir(os.path.join(directory, 'media')))
+            self.assertEqual(output.getvalue(), '')
+
     def production_check(self, **overrides):
         environment = {
             **os.environ,

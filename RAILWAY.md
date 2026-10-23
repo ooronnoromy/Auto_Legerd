@@ -24,7 +24,8 @@ In the same Railway project and environment:
 3. Keep the web service at **one replica** when using this volume.
 
 Uploads live in `/data/media`. Railway files outside a volume do not survive
-redeploys. Startup checks that the upload path is on an attached volume.
+redeploys. Without a volume, the app starts and logs a temporary-storage warning;
+attach the volume before saving photos you want to keep.
 
 ## 3. Set the web service variables
 
@@ -125,11 +126,19 @@ disk-based upload configuration.
 
 ## Troubleshooting
 
+If the crash logs show `ImproperlyConfigured: Set SECRET_KEY`, open the **web
+service -> Variables**, add or replace `SECRET_KEY` with a generated value of at
+least 50 characters, and deploy the variable change. Set it on the web service,
+not just PostgreSQL. Editing your local `.env` does not change Railway variables.
+If `.run/railway-secret.txt` was generated during troubleshooting, copy its
+contents as the variable value; this file is intentionally excluded from Git,
+Docker, and the deployment ZIP. Keep this key stable after the site starts.
+
 | Symptom | Check |
 | --- | --- |
 | Secret-key startup error | Use a new `SECRET_KEY` of at least 50 characters. |
 | Database startup error | Add PostgreSQL and its `DATABASE_URL` reference. |
-| Missing-volume startup error | Attach `/data`; set `MEDIA_ROOT=/data/media`. |
+| Temporary-storage warning | Attach `/data`; set `MEDIA_ROOT=/data/media` to preserve photos. |
 | HTTP 400 / invalid host | Generate the domain and redeploy; set custom allowed hosts. |
 | CSRF login error | Use HTTPS and add custom domains to trusted origins. |
 | Health check fails | Check migration logs and database connectivity. |

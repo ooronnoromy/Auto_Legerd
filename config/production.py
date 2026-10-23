@@ -5,7 +5,11 @@ from .settings import *  # noqa: F403
 
 DEBUG = False
 if len(SECRET_KEY) < 50 or SECRET_KEY.startswith(('DEV-', 'replace-', 'development-')):
-    raise ImproperlyConfigured('Set SECRET_KEY to a unique random value of at least 50 characters.')
+    raise ImproperlyConfigured(
+        'Set SECRET_KEY to a unique random value of at least 50 characters. '
+        'In Railway, add SECRET_KEY under the WEB service Variables and deploy the change. '
+        'Your local .env file is not uploaded to Railway.'
+    )
 if not os.getenv('DATABASE_URL') or DATABASES['default']['ENGINE'] != 'django.db.backends.postgresql':
     raise ImproperlyConfigured('Production requires a PostgreSQL DATABASE_URL from your Railway database service.')
 
