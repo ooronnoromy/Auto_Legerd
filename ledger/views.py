@@ -13,6 +13,7 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.vary import vary_on_cookie
 from django.views.decorators.http import require_GET
 from django.views.decorators.http import require_POST
+from django.utils import timezone
 from .models import Vehicle,Expense,Reminder,User
 from .forms import VehicleForm,ExpenseForm,ReminderForm,UserAddForm
 
@@ -47,12 +48,17 @@ def protected_media(request,filename):
   raise Http404
 
 def base_context(request):
- return {'nav_vehicles':Vehicle.objects.filter(owner=request.user),'is_admin':request.user.is_staff}
+ name=request.resolver_match.url_name if request.resolver_match else ''
+ active='cars' if name.startswith('vehicle') else 'add' if name=='expense_add' else 'history' if name.startswith('expense') else 'profile' if name in ['profile','profile_edit','password_change','help','service_centers'] else 'home' if name=='dashboard' else ''
+ titles={'dashboard':'Home','vehicles':'My Cars','expenses':'Expense History','expense_add':'Add Expense','reminders':'Reminders','reports':'Analytics','profile':'Profile','profile_edit':'Edit Profile','password_change':'Change Password','help':'Help & Support','service_centers':'Service Centers'}
+ hour=timezone.localtime().hour
+ greeting='Good morning' if hour<12 else 'Good afternoon' if hour<18 else 'Good evening'
+ return {'nav_vehicles':Vehicle.objects.filter(owner=request.user),'is_admin':request.user.is_staff,'active_nav':active,'mobile_title':titles.get(name,'Your Garage'),'greeting':greeting,'pending_reminder_count':Reminder.objects.filter(owner=request.user,completed=False).count()}
 
 @login_required
 def dashboard(request):
  ex=Expense.objects.filter(owner=request.user).select_related('vehicle')
- today=date.today();month_start=today.replace(day=1)
+ today=timezone.localdate();month_start=today.replace(day=1)
  current=ex.filter(date__gte=month_start,date__lte=today)
  totals={k:current.filter(category=k).aggregate(v=Sum('amount'))['v'] or Decimal('0') for k,_ in Expense.TYPES}
  total=sum(totals.values(),Decimal('0'))
@@ -84,17 +90,30 @@ def expenses(request):
  items=Expense.objects.filter(owner=request.user).select_related('vehicle')
  category=request.GET.get('category','')
  if category in dict(Expense.TYPES):items=items.filter(category=category)
- return render(request,'ledger/expenses.html',{**base_context(request),'items':items[:300],'selected':category,'categories':Expense.TYPES})
+ vehicle_id=request.GET.get('vehicle','')
+ if vehicle_id.isdecimal() and len(vehicle_id)<=18:items=items.filter(vehicle_id=vehicle_id)
+ fuel_type=request.GET.get('fuel_type','')
+ if fuel_type:items=items.filter(fuel_type=fuel_type)
+ station=request.GET.get('station','')
+ if station:items=items.filter(station=station)
+ return render(request,'ledger/expenses.html',{**base_context(request),'items':items[:300],'selected':category,'categories':Expense.TYPES,'selected_vehicle':vehicle_id,'selected_fuel':fuel_type,'fuel_types':['Petrol','Octane','Diesel','LPG','CNG','Electric'],'selected_station':station,'mobile_title':'Fuel History' if category=='fuel' else 'Maintenance History' if category=='maintenance' else 'Expense History'})
 @login_required
 def expense_form(request,pk=None):
  obj=get_object_or_404(Expense,pk=pk,owner=request.user) if pk else None
- form=ExpenseForm(request.POST or None,request.FILES or None,instance=obj,user=request.user)
+ initial={}
+ if not obj:
+  category=request.GET.get('category','fuel')
+  if category in dict(Expense.TYPES):initial.update(category=category,title='Fuel refill' if category=='fuel' else 'Maintenance service' if category=='maintenance' else '')
+  vehicle_id=request.GET.get('vehicle','')
+  chosen_vehicle=Vehicle.objects.filter(owner=request.user,pk=vehicle_id).first() if vehicle_id.isdecimal() and len(vehicle_id)<=18 else Vehicle.objects.filter(owner=request.user).first() if not vehicle_id else None
+  if chosen_vehicle:initial.update(vehicle=chosen_vehicle.pk,fuel_type=chosen_vehicle.fuel_type)
+ form=ExpenseForm(request.POST if request.method=='POST' else None,request.FILES or None,instance=obj,user=request.user,initial=initial)
  if request.method=='POST' and form.is_valid():
   item=form.save(commit=False);item.owner=request.user;item.save()
   if item.odometer is not None and item.odometer>item.vehicle.odometer:
    item.vehicle.odometer=item.odometer;item.vehicle.save(update_fields=['odometer'])
   messages.success(request,'Expense saved successfully.');return redirect('expenses')
- return render(request,'ledger/form.html',{**base_context(request),'form':form,'heading':'Edit expense' if pk else 'Add expense / fuel','back':'expenses','expense_mode':True})
+ return render(request,'ledger/form.html',{**base_context(request),'form':form,'heading':'Edit Expense' if pk else 'Add Expense','back':'expenses','expense_mode':True,'save_label':'Save Expense'})
 @login_required
 @require_POST
 def expense_delete(request,pk):
@@ -133,5 +152,6 @@ def export_csv(request):
 
 def manifest(request):return JsonResponse({'name':'AutoLedger – Car Cost Manager','short_name':'AutoLedger','start_url':'/','scope':'/','display':'standalone','background_color':'#090b0e','theme_color':'#0d0f12','icons':[{'src':'/static/icons/icon-192.png','sizes':'192x192','type':'image/png'},{'src':'/static/icons/icon-512.png','sizes':'512x512','type':'image/png'}]})
 def service_worker(request):
- script="""const CACHE='autoledger-v1';const ASSETS=['/static/css/style.css','/static/js/app.js','/static/icons/icon-192.png'];self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS))));self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))))));self.addEventListener('fetch',e=>{if(e.request.method!=='GET'||e.request.url.includes('/media/')||e.request.mode==='navigate')return;e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)))});"""
- return HttpResponse(script,content_type='text/javascript',headers={'Service-Worker-Allowed':'/'})
+ from django.conf import settings
+ script=(settings.BASE_DIR/'static'/'js'/'service-worker.js').read_text(encoding='utf-8')
+ return HttpResponse(script,content_type='text/javascript',headers={'Service-Worker-Allowed':'/','Cache-Control':'no-cache'})

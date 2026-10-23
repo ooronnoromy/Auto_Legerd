@@ -2,6 +2,16 @@
 
 An original Django + PostgreSQL car expense management application inspired by the supplied black-and-red mobile mockup. Runs in browsers on Windows, macOS, Linux, Android, and iPhone/iPad.
 
+## Mobile app interface
+
+The responsive phone layout follows the supplied black-and-red reference with
+five working bottom tabs: Home, Cars, Add Expense, History, and Profile. It
+includes private car details, fuel and maintenance shortcuts, camera/library
+photo selection and previews, a fuel total calculator, filtered histories,
+monthly/yearly/custom analytics, a reminder calendar with completion actions,
+profile editing, password changes, CSV export, and help. Currency is BDT.
+Receipt details are entered manually; photo uploads do not perform OCR.
+
 ## Implemented
 - Login using **phone number as username**, Django hashed passwords, and terminal-created superadmin.
 - Superadmin dashboard and app user creation; standard users cannot see each other's cars, expenses, photos or reminders.
@@ -92,6 +102,6 @@ Note: both Django and Docker Compose load `.env`. Set `USE_SQLITE=false` there w
 - The installed app opens in a separate app-style window. It is **not** a native Windows `.exe`, APK, or iOS App Store binary.
 
 ## Important limitations
-This version is a functional core app, not the complete aspirational mockup. Receipt/pump images are stored and viewable but **OCR/AI automatic extraction is not implemented**. Fuel cost calculations are entered as fields rather than OCR-derived. There is no automatic notification service, background photo sync, cloud backup, REST API, native packaging, or app-store publishing. Chart.js and Tailwind CDN require network access; custom CSS is bundled locally.
+This version is a functional core app, not the complete aspirational mockup. Receipt/pump images are stored and viewable but **OCR/AI automatic extraction is not implemented**. Fuel cost calculations are entered as fields rather than OCR-derived. There is no automatic notification service, background photo sync, cloud backup, REST API, native packaging, or app-store publishing. Chart.js and Google Fonts require network access; custom CSS and icons are bundled locally. If charts cannot load, expense totals and the main app remain available.
 
 For production: set `DJANGO_DEBUG=false`, configure a reverse proxy for HTTPS and protected media files, enforce image upload quotas/MIME validation, run `python manage.py check --deploy`, back up PostgreSQL, and add monitoring. Docker's published port is for local/staging use, not hardened internet-facing production.

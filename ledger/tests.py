@@ -141,6 +141,95 @@ class ApplicationTests(TestCase):
         self.assertEqual(len(response.json()['icons']), 2)
         self.assertEqual(self.client.get(reverse('service_worker')).status_code, 200)
 
+    def test_mobile_navigation_and_screens(self):
+        for page in ['dashboard', 'vehicles', 'expenses', 'profile', 'profile_edit', 'password_change', 'help', 'service_centers', 'reports', 'reminders']:
+            with self.subTest(page=page):
+                response = self.client.get(reverse(page))
+                self.assertEqual(response.status_code, 200)
+                self.assertContains(response, 'aria-label="Mobile navigation"')
+                for destination in ['dashboard', 'vehicles', 'expense_add', 'expenses', 'profile']:
+                    self.assertContains(response, f'href="{reverse(destination)}"')
+
+    def test_car_details_are_private_and_show_real_totals(self):
+        response = self.client.get(reverse('vehicle_detail', args=[self.vehicle.pk]))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['total'], Decimal('500.00'))
+        self.assertEqual(response.context['liters'], Decimal('5.00'))
+        self.assertNotContains(response, 'Private Car')
+        self.assertEqual(self.client.get(reverse('vehicle_detail', args=[self.foreign_vehicle.pk])).status_code, 404)
+
+    def test_expense_shortcuts_prefill_type_and_own_vehicle(self):
+        response = self.client.get(reverse('expense_add'), {'category': 'fuel', 'vehicle': self.vehicle.pk})
+        self.assertEqual(response.context['form'].initial['category'], 'fuel')
+        self.assertEqual(str(response.context['form'].initial['vehicle']), str(self.vehicle.pk))
+        response = self.client.get(reverse('expense_add'), {'category': 'maintenance', 'vehicle': self.foreign_vehicle.pk})
+        self.assertEqual(response.context['form'].initial['category'], 'maintenance')
+        self.assertNotIn('vehicle', response.context['form'].initial)
+
+    def test_profile_edit_cannot_change_permissions_or_other_users(self):
+        response = self.client.post(reverse('profile_edit'), {'username': '01799999999', 'first_name': 'Driver',
+            'last_name': 'One', 'email': 'driver@example.com', 'is_staff': 'on', 'is_superuser': 'on'})
+        self.assertRedirects(response, reverse('profile'))
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.username, '01799999999')
+        self.assertEqual(self.user.email, 'driver@example.com')
+        self.assertFalse(self.user.is_staff)
+        self.assertFalse(self.user.is_superuser)
+        self.other.refresh_from_db()
+        self.assertEqual(self.other.username, '01812345678')
+
+    def test_profile_phone_validation_and_uniqueness(self):
+        for phone in ['not-a-phone', self.other.username]:
+            with self.subTest(phone=phone):
+                response = self.client.post(reverse('profile_edit'), {'username': phone})
+                self.assertEqual(response.status_code, 200)
+                self.assertIn('username', response.context['form'].errors)
+
+    def test_password_change_retains_session_and_rejects_wrong_password(self):
+        data = {'old_password': 'wrong-password', 'new_password1': 'Changed-driver-96!', 'new_password2': 'Changed-driver-96!'}
+        response = self.client.post(reverse('password_change'), data)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('old_password', response.context['form'].errors)
+        data['old_password'] = 'Test-driver-82!'
+        self.assertRedirects(self.client.post(reverse('password_change'), data), reverse('profile'))
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password('Changed-driver-96!'))
+        self.assertEqual(self.client.get(reverse('profile')).status_code, 200)
+
+    def test_reminder_calendar_filters_dates_and_completes_own_items(self):
+        self.reminder.due_date = date.today()
+        self.reminder.save()
+        response = self.client.get(reverse('reminders'), {'day': date.today().isoformat()})
+        self.assertEqual(list(response.context['items']), [self.reminder])
+        self.assertTrue(any(day['has_reminder'] for week in response.context['calendar_weeks'] for day in week))
+        self.assertRedirects(self.client.post(reverse('reminder_toggle', args=[self.reminder.pk])), reverse('reminders'))
+        self.reminder.refresh_from_db()
+        self.assertTrue(self.reminder.completed)
+        self.assertEqual(self.client.get(reverse('reminder_toggle', args=[self.reminder.pk])).status_code, 405)
+        self.assertEqual(self.client.post(reverse('reminder_toggle', args=[self.foreign_reminder.pk])).status_code, 404)
+        response = self.client.get(reverse('reminders'), {'status': 'upcoming', 'view': 'list'})
+        self.assertNotIn(self.reminder, response.context['items'])
+
+    def test_analytics_period_and_vehicle_history_filters(self):
+        Expense.objects.create(owner=self.user, vehicle=self.vehicle, category='maintenance', title='Earlier service',
+            amount=Decimal('100.00'), date=date(2020, 1, 5), station='My Service Center')
+        response = self.client.get(reverse('reports'), {'period': 'custom', 'start': '2020-01-01', 'end': '2020-01-31'})
+        self.assertEqual(response.context['grand'], Decimal('100.00'))
+        self.assertEqual(response.context['count'], 1)
+        self.assertEqual(response.context['totals'][0]['label'], 'Maintenance')
+        response = self.client.get(reverse('reports'), {'period': 'custom', 'start': 'invalid', 'end': '2020-01-31'})
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get(reverse('expenses'), {'vehicle': self.foreign_vehicle.pk})
+        self.assertEqual(len(response.context['items']), 0)
+        response = self.client.get(reverse('expenses'), {'station': 'My Service Center'})
+        self.assertEqual(len(response.context['items']), 1)
+        self.assertContains(self.client.get(reverse('service_centers')), 'My Service Center')
+
+    def test_profile_and_account_endpoints_require_login(self):
+        self.client.logout()
+        for page in ['profile', 'profile_edit', 'password_change', 'service_centers', 'help']:
+            self.assertEqual(self.client.get(reverse(page)).status_code, 302)
+
     def test_healthcheck_requires_no_login_and_checks_database(self):
         self.client.logout()
         response = self.client.get(reverse('healthcheck'))
